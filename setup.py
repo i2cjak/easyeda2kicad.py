@@ -38,7 +38,11 @@ setup(
     python_requires=">=3.9",
     install_requires=[],
     extras_require={
+        "app": [
+            "Flask>=3.0.0",
+        ],
         "dev": [
+            "Flask>=3.0.0",
             "pre-commit>=3.0.0",
         ]
     },

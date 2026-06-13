@@ -50,3 +50,24 @@ def test_symbol_export_includes_custom_fields() -> None:
     assert '"Package"' in exported
     assert '"LQFN-56"' in exported
     assert "(id 11)" in exported
+
+
+def test_symbol_export_includes_fp_filters_and_escapes_fields() -> None:
+    symbol = KiSymbolInfo(
+        name="TestPart",
+        prefix="U",
+        package="Lib:Footprint",
+        manufacturer='ACME "Quoted"',
+        datasheet="https://example.com/ds.pdf",
+        lcsc_id="C2040",
+        description='Buck "converter"',
+        fp_filters="Lib:QFN*7x7mm*",
+    )
+
+    exported = "\n".join(symbol.export())
+
+    assert '"ki_fp_filters"' in exported
+    assert '"Lib:QFN*7x7mm*"' in exported
+    assert "(id 7)" in exported
+    assert 'ACME \\"Quoted\\"' in exported
+    assert 'Buck \\"converter\\"' in exported

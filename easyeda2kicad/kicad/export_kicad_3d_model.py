@@ -256,10 +256,10 @@ class Exporter3dModelKicad:
         EasyEDA always provides both OBJ (→WRL) and STEP for the same UUID.
         Returns False if files already exist and overwrite is False, True otherwise.
         """
-        if not self.output:
+        if not self.output and not self.output_step:
             return False
 
-        model_name = self.output.name
+        model_name = self.output.name if self.output else self.input.name
         output_path = Path(output_dir)
         wrl_path = output_path / f"{model_name}.wrl"
         step_path = output_path / f"{model_name}.step"
@@ -270,7 +270,7 @@ class Exporter3dModelKicad:
 
         output_path.mkdir(parents=True, exist_ok=True)
 
-        if self.output.raw_wrl:
+        if self.output and self.output.raw_wrl:
             wrl_path.write_text(self.output.raw_wrl, encoding="utf-8")
 
         if self.output_step:

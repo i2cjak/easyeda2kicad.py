@@ -73,7 +73,7 @@ class KiSymbolDefaults(Enum):
     PIN_SPACING = 2.54
     PIN_NUM_SIZE = 1.27
     PIN_NAME_SIZE = 1.27
-    DEFAULT_BOX_LINE_WIDTH = 0
+    DEFAULT_BOX_LINE_WIDTH = 0.254
     PROPERTY_FONT_SIZE = 1.27
     FIELD_OFFSET_START = 5.08
     FIELD_OFFSET_INCREMENT = 2.54
@@ -81,6 +81,17 @@ class KiSymbolDefaults(Enum):
 
 def sanitize_fields(name: str) -> str:
     return name.replace(" ", "").replace("/", "_").replace(":", "_")
+
+
+def escape_kicad_string(value: str) -> str:
+    return (
+        str(value)
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\r\n", "\\n")
+        .replace("\n", "\\n")
+        .replace("\r", "\\n")
+    )
 
 
 def apply_text_style(text: str) -> str:
@@ -123,6 +134,8 @@ def _make_property(
         hide_token = ""
         effects = f"(effects (font (size {font_size} {font_size}) {style}) {hide})"
 
+    key = escape_kicad_string(key)
+    value = escape_kicad_string(value)
     return textwrap.indent(
         textwrap.dedent(f"""
         (property
@@ -147,6 +160,7 @@ class KiSymbolInfo:
     mpn: str = ""
     keywords: str = ""
     description: str = ""
+    fp_filters: str = ""
     custom_fields: dict[str, str] = field(default_factory=dict)
     y_low: Union[int, float] = 0
     y_high: Union[int, float] = 0
@@ -249,6 +263,20 @@ class KiSymbolInfo:
                     version=version,
                 )
             )
+        if self.fp_filters:
+            field_offset_y += KiSymbolDefaults.FIELD_OFFSET_INCREMENT.value
+            header.append(
+                _make_property(
+                    key="ki_fp_filters",
+                    value=self.fp_filters,
+                    id_=7,
+                    pos_y=self.y_low - field_offset_y,
+                    font_size=KiSymbolDefaults.PROPERTY_FONT_SIZE.value,
+                    style="",
+                    hide="hide",
+                    version=version,
+                )
+            )
         if self.keywords:
             field_offset_y += KiSymbolDefaults.FIELD_OFFSET_INCREMENT.value
             header.append(
@@ -310,12 +338,17 @@ class KiSymbolPin:
     orientation: float
     pos_x: Union[int, float]
     pos_y: Union[int, float]
+    hidden: bool = False
 
     def export(self, version: int = KICAD_SYM_VERSION_20211014) -> str:
+        if self.hidden:
+            hidden_token = "\n              (hide yes)"
+        else:
+            hidden_token = ""
         return """
             (pin {pin_type} {pin_style}
               (at {x:.2f} {y:.2f} {orientation})
-              (length {pin_length})
+              (length {pin_length}){hidden}
               (name "{pin_name}" (effects (font (size {name_size} {name_size}))))
               (number "{pin_num}" (effects (font (size {num_size} {num_size}))))
             )""".format(
@@ -328,9 +361,10 @@ class KiSymbolPin:
             # KiCad pin orientation is offset by 180° from EasyEDA's convention
             orientation=(180 + self.orientation) % 360,
             pin_length=self.length,
-            pin_name=apply_pin_name_style(pin_name=self.name),
+            hidden=hidden_token,
+            pin_name=escape_kicad_string(apply_pin_name_style(pin_name=self.name)),
             name_size=KiSymbolDefaults.PIN_NAME_SIZE.value,
-            pin_num=self.number,
+            pin_num=escape_kicad_string(self.number),
             num_size=KiSymbolDefaults.PIN_NUM_SIZE.value,
         )
 

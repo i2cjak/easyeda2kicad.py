@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JLC KiCad Symbol Editor</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v=asset_version) }}">
+  </head>
+  <body class="dark">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">JLC</span>
+        <span>KiCad Symbol Editor</span>
+      </div>
+      <form id="importForm" class="import-bar">
+        <input id="lcscInput" name="lcsc" autocomplete="off" placeholder="C2040, C42411118" required>
+        <label class="checkline">
+          <input id="codexPass" type="checkbox" checked>
+          <span>Codex datasheet pass</span>
+        </label>
+        <button type="submit">Import</button>
+      </form>
+      <button id="themeToggle" class="ghost" type="button">Light</button>
+    </header>
+
+    <nav class="library-bar" aria-label="Loaded symbol folders">
+      <div id="folderTabs" class="folder-tabs"></div>
+      <div class="library-actions">
+        <span id="librarySummary" class="pill muted">No symbols</span>
+        <button id="clearLibraryButton" class="ghost" type="button" disabled>Clear</button>
+      </div>
+    </nav>
+
+    <main class="workspace">
+      <section class="panel overview-panel">
+        <div class="panel-title">
+          <h1>Part</h1>
+          <span id="statusPill" class="pill">Idle</span>
+        </div>
+        <dl id="overview" class="overview"></dl>
+        <div id="notes" class="notes"></div>
+      </section>
+
+      <section class="panel symbol-panel">
+        <div class="panel-title">
+          <h1>Symbol</h1>
+          <div class="button-row">
+            <select id="symbolSelect" class="toolbar-select" aria-label="Loaded symbol" disabled></select>
+            <select id="unitSelect" class="toolbar-select unit-select" aria-label="Symbol unit" disabled></select>
+            <button id="zoomOutButton" class="ghost icon-button" type="button" title="Zoom out" aria-label="Zoom out" disabled>-</button>
+            <button id="zoomResetButton" class="ghost icon-button" type="button" title="Reset zoom" aria-label="Reset zoom" disabled>1:1</button>
+            <button id="zoomInButton" class="ghost icon-button" type="button" title="Zoom in" aria-label="Zoom in" disabled>+</button>
+            <button id="panLeftButton" class="ghost icon-button" type="button" title="Translate left" aria-label="Translate left" disabled>L</button>
+            <button id="panUpButton" class="ghost icon-button" type="button" title="Translate up" aria-label="Translate up" disabled>U</button>
+            <button id="panDownButton" class="ghost icon-button" type="button" title="Translate down" aria-label="Translate down" disabled>D</button>
+            <button id="panRightButton" class="ghost icon-button" type="button" title="Translate right" aria-label="Translate right" disabled>R</button>
+            <button id="cleanupButton" class="ghost" type="button" disabled>Clean</button>
+            <button id="validateButton" class="ghost" type="button" disabled>Validate</button>
+            <button id="downloadSymbolButton" type="button" disabled>.kicad_sym</button>
+            <button id="downloadBundleButton" type="button" disabled>Asset ZIP</button>
+          </div>
+        </div>
+        <div class="canvas-shell">
+          <svg id="symbolPreview" class="symbol-preview" viewBox="-220 -170 440 340" role="img" aria-label="KiCad symbol preview"></svg>
+        </div>
+        <div id="kicadPreviewShell" class="kicad-preview-shell" hidden>
+          <div class="preview-title">KiCad Render</div>
+          <div id="kicadPreview" class="kicad-preview"></div>
+        </div>
+        <div id="footprintPreviewShell" class="kicad-preview-shell" hidden>
+          <div class="preview-title">Footprint Render</div>
+          <div id="footprintPreview" class="kicad-preview"></div>
+        </div>
+        <div class="table-wrap">
+          <table id="pinTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Number</th>
+                <th>Type</th>
+                <th>Style</th>
+                <th>Side</th>
+                <th>X</th>
+                <th>Y</th>
+                <th>Rot</th>
+                <th>Len</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="panel property-panel">
+        <div class="panel-title">
+          <h1>Properties</h1>
+          <div class="codex-controls">
+            <button id="runCodexButton" class="ghost" type="button" disabled>Run Codex</button>
+            <span id="codexState" class="pill muted">No job</span>
+          </div>
+        </div>
+        <form id="propertyForm" class="property-grid"></form>
+        <div class="subhead">
+          <h2>Custom Fields</h2>
+          <button id="addFieldButton" class="ghost" type="button" disabled>Add</button>
+        </div>
+        <div id="customFields" class="custom-fields"></div>
+      </aside>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js', v=asset_version) }}"></script>
+  </body>
+</html>

@@ -134,6 +134,31 @@ easyeda2kicad --full --lcsc_id=C2040 --use-cache --debug
 
 Clear the cache with `rm -rf .easyeda_cache`.
 
+### Flask symbol editor
+
+This checkout also includes a local Flask editor for cleaning and reviewing generated KiCad symbols before download:
+
+```bash
+uv run --with flask python -m symbol_editor_app.app
+```
+
+Open `http://127.0.0.1:5057/`, enter an LCSC part number, and import. The editor:
+
+- cleans the imported symbol into a KLC-style layout with power pins on top, grounds on bottom, and signals grouped by electrical type
+- runs an optional background Codex datasheet pass for pin electrical types
+- validates the current symbol and asset ZIP with `kicad-cli`
+- unlocks `.kicad_sym` and asset ZIP downloads only after the current edit state validates
+
+The background Codex pass uses `codex -p work` by default. To run it with a different Codex profile, set a plain profile name before starting the app:
+
+```bash
+SYMBOL_EDITOR_CODEX_PROFILE=datasheet uv run --with flask python -m symbol_editor_app.app
+```
+
+Set `SYMBOL_EDITOR_CODEX_PROFILE=none` to run Codex without `-p`.
+
+The editor expects `codex` and `kicad-cli` on `PATH` for the Codex review and KiCad validation/render steps.
+
 ## 🔗 Add libraries in Kicad
 
 **These are the instructions to add the default easyeda2kicad libraries in Kicad.**
